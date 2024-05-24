@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const mongoose = require('mongoose')
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -12,11 +13,7 @@ const cookieParser = require('cookie-parser');
 
 
 // Signup route - GET
-router.get('/', (req, res) => {
-    // Your logic for handling GET requests
 
-    res.sendFile(path.join(__dirname, 'template', 'signup.html'));
-});
 
 
 
@@ -58,78 +55,60 @@ const userSchema  = new mongoose.Schema({
         default: Date.now
     }
 })
+
+
+
+
+
 //user mnodel
 const User = mongoose.model('User', userSchema);
 
 
 // Signup route - POST
-router.post('/', async  (req, res) => {
-//simple registration for the user on the webpage deatils would be extracted from the request body
+router.post('/', async (req, res) => {
+    try {
+        const { name, email, password, confirm_password } = req.body;
+        console.log(name, email, password)
 
-try { 
-
-    const{name ,email , password,confirm_password  } = req.body
-    let existingUser = await User.findOne({ email });
-
-    console.log("Existing User:", existingUser);
-
-    if (existingUser) {
-        console.log("User already exists");
-        // Check if OTP has expired and user is not verified
-        if (existingUser.otpExpiresAt && existingUser.otpExpiresAt < new Date() && !existingUser.isUserVerified) {
-            // Delete expired user
-            console.log("Deleting expired user");
-            await User.findByIdAndDelete(existingUser._id);
-        } else {
-            // Return error response if user is verified or OTP has not expired
-            console.log("User is already verified or OTP has not expired");
-            if (existingUser.isUserVerified) {
-                return res.status(400).json({ message: 'User with this email is already verified' });
-            } else {
-                return res.status(400).json({ message: 'OTP for this user has not expired yet' });
-            }
+        // Check if passwords match
+        if (password !== confirm_password) {
+            return res.status(400).json({ message: 'Passwords do not match' });
         }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User with this email already exists' });
+        }
+
+        // Create a new user
+        const newUser = new User({ name, email, password });
+        await newUser.save();
+
+        // Generate OTP
+        const otp = otpGenerator.generate(6, { upperCaseAlphabets: true, specialChars: true });
+
+        // Store OTP and its expiration time
+        newUser.otp = otp;
+        newUser.otpCreation = new Date();
+        newUser.otpExpiresAt = new Date(newUser.otpCreation.getTime() + 60000); // 1 minute
+        await newUser.save();
+
+        // Send OTP via email
+        await sendEmail(email, 'Your OTP verification code is', otp);
+
+        // Set cookie with user's email (expires in 1 minute)
+        res.cookie('userEmail', email, { maxAge: 60000 });
+
+        // Redirect to OTP verification page
+        return res.redirect('/signup/verify-otp');
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
-
-    console.log("Proceeding with registration");
-
-    if (password !== confirm_password) {
-        return res.status(400).json({ message: 'Passwords do not match' });
-    }
-
-
-
-    const newUser = new User ({name , email , password}) 
-    await newUser.save()
-    
-
-    const otp = otpGenerator.generate(6, { upperCaseAlphabets: true, specialChars: true });
-    
-    const otpCreation = new Date();
-    const otpExpiresAt = new Date(otpCreation.getTime() + 60000); // 1 minute
-
-    newUser.otp = otp; // Store OTP in user object
-    newUser.otpCreation = otpCreation;
-    newUser.otpExpiresAt = otpExpiresAt;
-
-    await newUser.save();
-
-    await sendEmail(email, 'Your OTP verification code is',  otp); // Replace '123456' with the actual OTP
-
-
-    
-    res.cookie('userEmail', email, { maxAge: 60000 }); // Set cookie with user's email (expires in 1 minute)
-    return res.redirect('/signup/verify-otp');
-
-
-
-    }
-catch(error){
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-}
-
 });
+
+
 
 
 
@@ -206,7 +185,7 @@ async function sendEmail(to,text,otp) {
         console.error('Error occurred:', error);
     }
 }
-
+// Export the router
 module.exports = router;
-module.exports = User;
+
 
