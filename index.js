@@ -2,11 +2,14 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const port = 5000;
+const cookieParser = require('cookie-parser');
+
 const cors = require('cors');
 
 const signupRouter = require('./routes/signup'); // Import the router from signup.js
 const logoutRoute = require('./routes/logout');
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(cors()); // Enable CORS for all routes
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies

@@ -99,9 +99,9 @@ router.post('/', async (req, res) => {
 
         // Set cookie with user's email (expires in 1 minute)
         res.cookie('userEmail', email, { maxAge: 60000 });
+        return res.status(200).json({ message: 'Signup successful, OTP sent to email' });
 
         // Redirect to OTP verification page
-        return res.redirect('/signup/verify-otp');
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -113,15 +113,11 @@ router.post('/', async (req, res) => {
 
 
 
-router.route('/verify-otp')
-    .get((req, res) => {
-        // Your logic for handling GET requests
-        res.sendFile(path.join(__dirname, 'template', 'otp.html'));
-    })
+router.route('/otp-verify')
     .post(async (req, res) => {
         try {
             const userEmail = req.cookies.userEmail; // Retrieve user's email from cookie
-            const otpverification = req.body.otpverification; // Extract OTP verification code from request body
+            const {otp }  = req.body; // Extract OTP verification code from request body
             const user = await User.findOne({ email: userEmail });
 
             console.log("User Email:", userEmail);
