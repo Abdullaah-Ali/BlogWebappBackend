@@ -10,8 +10,10 @@ const signupRouter = require('./routes/signup'); // Import the router from signu
 const logoutRoute = require('./routes/logout');
 app.use(express.json());
 app.use(cookieParser());
-
-app.use(cors()); // Enable CORS for all routes
+app.use(cors({
+    origin: 'http://localhost:3000', // Frontend origin
+    credentials: true
+  }));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 mongoose.set('strictQuery', false); // Set mongoose configuration

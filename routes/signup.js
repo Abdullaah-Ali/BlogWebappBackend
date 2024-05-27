@@ -66,48 +66,81 @@ const User = mongoose.model('User', userSchema);
 
 // Signup route - POST
 router.post('/', async (req, res) => {
-    try {
-        const { name, email, password, confirm_password } = req.body;
-        console.log(name, email, password)
 
-        // Check if passwords match
-        if (password !== confirm_password) {
-            return res.status(400).json({ message: 'Passwords do not match' });
+//simple registration for the user on the webpage deatils would be extracted from the request body
+
+try { 
+
+    const{name ,email , password,confirm_password  } = req.body
+    let existingUser = await User.findOne({ email });
+
+    console.log("Existing User:", existingUser);
+
+    if (existingUser) {
+        console.log("User already exists");
+        // Check if OTP has expired and user is not verified
+        if (existingUser.otpExpiresAt && existingUser.otpExpiresAt < new Date() && !existingUser.isUserVerified) {
+            // Delete expired user
+            console.log("Deleting expired user");
+            await User.findByIdAndDelete(existingUser._id);
+        } else {
+            // Return error response if user is verified or OTP has not expired
+            console.log("User is already verified or OTP has not expired");
+            if (existingUser.isUserVerified) {
+                return res.status(400).json({ message: 'User with this email is already verified' });
+            } else {
+                return res.status(400).json({ message: 'OTP for this user has not expired yet' });
+            }
         }
-
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User with this email already exists' });
-        }
-
-        // Create a new user
-        const newUser = new User({ name, email, password });
-        await newUser.save();
-
-        // Generate OTP
-        const otp = otpGenerator.generate(6, { upperCaseAlphabets: true, specialChars: true });
-
-        // Store OTP and its expiration time
-        newUser.otp = otp;
-        newUser.otpCreation = new Date();
-        newUser.otpExpiresAt = new Date(newUser.otpCreation.getTime() + 60000); // 1 minute
-        await newUser.save();
-
-        // Send OTP via email
-        await sendEmail(email, 'Your OTP verification code is', otp);
-
-        // Set cookie with user's email (expires in 1 minute)
-        res.cookie('userEmail', email, { maxAge: 60000 });
-        return res.status(200).json({ message: 'Signup successful, OTP sent to email' });
-
-        // Redirect to OTP verification page
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
     }
-});
 
+    console.log("Proceeding with registration");
+
+    if (password !== confirm_password) {
+        return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+
+
+    const newUser = new User ({name , email , password}) 
+    await newUser.save()
+    
+
+    const otp = otpGenerator.generate(6, { upperCaseAlphabets: true, specialChars: true });
+    
+    const otpCreation = new Date();
+    const otpExpiresAt = new Date(otpCreation.getTime() + 60000); // 1 minute
+
+    newUser.otp = otp; // Store OTP in user object
+    newUser.otpCreation = otpCreation;
+    newUser.otpExpiresAt = otpExpiresAt;
+
+    await newUser.save();
+
+    await sendEmail(email, 'Your OTP verification code is',  otp); // Replace '123456' with the actual OTP
+          // Set the cookie with appropriate attributes
+          res.cookie('userEmail', email, {
+            maxAge: 3600000,
+            httpOnly: false,
+            sameSite: 'none', // Allow cross-site access
+            secure: true, // Set to true if using HTTPS in production
+            domain: 'localhost', // Set to the appropriate domain
+            path: '/' // Make the cookie accessible across all paths
+        });
+    
+    console.log('Cookie set successfully:', email); 
+    return res.status(200).json({ message: 'User registration can proceed', email , redirectTo: '/signup/otp-verify' });
+
+
+
+
+    }
+catch(error){
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+}
+
+});
 
 
 
@@ -116,30 +149,31 @@ router.post('/', async (req, res) => {
 router.route('/otp-verify')
     .post(async (req, res) => {
         try {
-            const userEmail = req.cookies.userEmail; // Retrieve user's email from cookie
-            const {otp }  = req.body; // Extract OTP verification code from request body
+            
+            const { otp } = req.body;
+            console.log(otp)
+            const userEmail = req.cookies.userEmail;
+            console.log(userEmail)
             const user = await User.findOne({ email: userEmail });
 
             console.log("User Email:", userEmail);
-            console.log("OTP Verification Code:", otpverification);
-            console.log("User OTP:", user.otp);
 
             if (!user || user.otpExpiresAt < new Date()) {
-                // User not found or OTP expired
-                // Discard registration info and redirect to signup page
+                
                 console.log("User not found or OTP expired");
-                return res.redirect('/signup');
+                
             }
     
-            if (otpverification === user.otp) {
-                // OTP verification successful
-                // Mark user as verified and save changes
+            if ( otp === user.otp) {
+               
                 console.log("OTP verification successful");
                 user.isUserVerified = true;
                 await user.save();
-                return res.redirect('/login');
+                return res.status(200).json({ message: 'User registration can proceed', redirectTo: '/' });
+
+
             } else {
-                // Incorrect OTP
+               
                 console.log("Incorrect OTP");
                 return res.redirect('/signup/verify-otp');
             }
@@ -154,7 +188,7 @@ router.route('/otp-verify')
 
 
 //mail // nodemailer
-
+//email sending function
 async function sendEmail(to,text,otp) {
     try {
         // Create a transporter using Gmail SMTP settings
