@@ -4,10 +4,6 @@ const path = require('path');
 
 
 router.route('/')
-    .get((req, res) => {
-        // Your logic for handling GET requests
-        res.sendFile(path.join(__dirname, 'template', 'logout.html'));
-    })
     .post(async (req, res) => {
 
 

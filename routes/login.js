@@ -6,13 +6,11 @@ const User = require('./signup');
 
 
 router.route('/')
-    .get((req, res) => {
-        // Your logic for handling GET requests
-        res.sendFile(path.join(__dirname, 'template', 'login.html'));
-    })
+
     .post(async (req, res) => {
         try {
-            const { email, password } = req.body;
+            const { email, password } = req.body; 
+            console.log(email , password)  
             const user = await User.findOne({ email: email });
 
             if (!user) {
@@ -29,11 +27,18 @@ router.route('/')
             }, 'secret123', { expiresIn: '1h' });
 
             console.log(token);
-            return res.cookie('jwtToken', token, { 
-                httpOnly: true, 
+             res.cookie('jwtToken', token, { 
+                httpOnly: true,
+                maxAge: 3600000, 
+                sameSite: 'none',
                 secure: true,
-                sameSite: 'strict' 
-            }).json({ status: 'ok' });
+                domain: 'localhost',
+                sameSite: 'none' ,
+                path: '/'
+            });
+            return res.status(200).json({ message: 'User login is completed', email , redirectTo: '/' });
+
+            
 
         } catch (error) {
             console.error(error);
@@ -41,6 +46,8 @@ router.route('/')
         }
     });
 
+
+//imported function for the usage of checking the token authentication everytime user access 
 function authenticateToken(req, res, next) {
         const token = req.cookies.jwtToken;
     
