@@ -189,6 +189,7 @@ router.route('/otp-verify')
 
 //mail // nodemailer
 //email sending function
+//temp mail 
 async function sendEmail(to,text,otp) {
     try {
         // Create a transporter using Gmail SMTP settings

@@ -29,12 +29,12 @@ app.use('/logout', logoutRoute);
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {
     res.json({ message: 'Welcome to the home page!', user: req.user });
-});
+}); 
 
 // Start the server
 const start = async () => {
     try {
-        await mongoose.connect('mongodb+srv://abdullahaliquadri:tiktak786@cluster0.fihugf0.mongodb.net/myclients?retryWrites=true&w=majority');
+        await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true }); // Use environment variable for the connection string
         app.listen(port, () => {
             console.log('Server has been started on port ' + port);
         });
