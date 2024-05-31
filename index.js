@@ -28,7 +28,7 @@ app.use('/login', loginRouter);
 app.use('/signup', signupRouter); // Use the signupRouter middleware
 app.use('/logout', logoutRoute);
 app.use('/createblog', blogcreateRouter);
-app.use('./blogs' , blogRouter)
+app.use('/blogs', blogRouter)
 
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {
