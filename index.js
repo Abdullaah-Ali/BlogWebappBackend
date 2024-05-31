@@ -8,6 +8,8 @@ const cors = require('cors');
 
 const signupRouter = require('./routes/signup'); // Import the router from signup.js
 const logoutRoute = require('./routes/logout');
+const blogRouter = require('./routes/blogview')
+const blogcreateRouter = require ('./routes/blog')
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -25,6 +27,8 @@ const { router: loginRouter, authenticateToken } = require('./routes/login');
 app.use('/login', loginRouter);
 app.use('/signup', signupRouter); // Use the signupRouter middleware
 app.use('/logout', logoutRoute);
+app.use('/createblog', blogcreateRouter);
+app.use('./blogs' , blogRouter)
 
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {
@@ -34,7 +38,7 @@ app.get('/home', authenticateToken, (req, res) => {
 // Start the server
 const start = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true }); // Use environment variable for the connection string
+        await mongoose.connect('mongodb+srv://abdullahaliquadri:tiktak786@cluster0.fihugf0.mongodb.net/myclients?retryWrites=true&w=majority'); // Use environment variable for the connection string
         app.listen(port, () => {
             console.log('Server has been started on port ' + port);
         });
