@@ -10,6 +10,7 @@ const signupRouter = require('./routes/signup'); // Import the router from signu
 const logoutRoute = require('./routes/logout');
 const blogRouter = require('./routes/blogview')
 const blogcreateRouter = require ('./routes/blog')
+const allblogs = require('./routes/home')
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -29,6 +30,7 @@ app.use('/signup', signupRouter); // Use the signupRouter middleware
 app.use('/logout', logoutRoute);
 app.use('/createblog', blogcreateRouter);
 app.use('/blogs', blogRouter)
+app.use('/',allblogs)
 
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {
