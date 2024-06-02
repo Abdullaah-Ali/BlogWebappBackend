@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser');
 const { authenticateToken } = require('./login');
 const { parse, isValid } = require('date-fns');
-
+const { UserProfile  } = require('./profile')
 
 //defining the mongoose schema for the blog page 
 
@@ -17,11 +17,20 @@ const blogSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    description:{
+        type:String,
+        required:true
+    },
     createdat:{
         type:Date,
         default:null
     },
+
     blogId:{
+        type:String,
+        required:true
+    },
+    author:{
         type:String,
         required:true
     },
@@ -54,10 +63,14 @@ router.route('/')
     .post(authenticateToken, async (req, res) => {
         try{
             //console.log("hey i was hit ")
-            const {content,formattedDate} = req.body
+            const {content,formattedDate , description} = req.body
             console.log(content,formattedDate)
             
-
+            const userProfile = await UserProfile.findOne({ email: userEmail });
+            if (!userProfile) {
+              return res.status(404).json({ message: 'User profile not found' });
+            }
+            
             const createdDate = parse(formattedDate, 'yy/MM/dd', new Date());
             console.log('Parsed Date:', createdDate);
 
@@ -69,17 +82,22 @@ router.route('/')
             // Get the title from the first line of the content
             const title = getTitleFromFirstLine(content);
             console.log("Title:", title);
+        
 
             const newBlogPost = new Blog({
                 title:title,
                 content:content,
                 createdat: createdDate,
+                description:description,
                 blogId: new mongoose.Types.ObjectId().toString(), // Generate a unique blogId
-                email: req.user.email // Assuming email is stored in the token
+                email: req.user.email ,
+                author: UserProfile.name
+                // Assuming email is stored in the token
             });
             await newBlogPost.save()
 
             res.status(201).json(newBlogPost);
+            
 
 
 
@@ -99,5 +117,4 @@ router.route('/')
 
    
    
-module.exports = router;
-module.exports = Blog;
+        module.exports = { router,Blog }; 

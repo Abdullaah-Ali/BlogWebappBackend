@@ -1,7 +1,7 @@
 // routes/blogview.js
 const express = require('express');
 const router = express.Router();
-const Blog = require('./blog'); // Assuming you have a Blog model defined
+const { Blog } = require('./blog');   // Import the Blog model
 
 router.get('/:title', async (req, res) => {
   try {

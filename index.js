@@ -6,15 +6,20 @@ const cookieParser = require('cookie-parser');
 
 const cors = require('cors');
 
-const signupRouter = require('./routes/signup'); // Import the router from signup.js
+const {router : signupRouter} = require('./routes/signup'); // Import the router from signup.js
 const logoutRoute = require('./routes/logout');
 const blogRouter = require('./routes/blogview')
-const blogcreateRouter = require ('./routes/blog')
+const {router: blogcreateRouter} = require ('./routes/blog')
 const allblogs = require('./routes/home')
+const {router : profileRouter} = require('./routes/profile')
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     origin: 'http://localhost:3000', // Frontend origin
+    //methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    //allowedHeaders: ['Content-Type'],
     credentials: true
   }));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -30,7 +35,8 @@ app.use('/signup', signupRouter); // Use the signupRouter middleware
 app.use('/logout', logoutRoute);
 app.use('/createblog', blogcreateRouter);
 app.use('/blogs', blogRouter)
-app.use('/',allblogs)
+app.use('/', allblogs)
+app.use('/profile' , profileRouter )
 
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {

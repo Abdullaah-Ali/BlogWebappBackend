@@ -217,7 +217,7 @@ async function sendEmail(to,text,otp) {
     }
 }
 // Export the router
-module.exports = router;
-module.exports = User;
+module.exports = { router, User }; // Export both router and authenticateToken
+
 
 
