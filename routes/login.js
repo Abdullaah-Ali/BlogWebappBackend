@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const jwt = require('jsonwebtoken');
+
 const {User} = require('./signup');
 
 
@@ -23,7 +24,8 @@ router.route('/')
 
             const token = jwt.sign({
                 email: user.email,
-                name: user.name
+                name: user.name,
+                
             }, 'secret123', { expiresIn: '1h' });
 
             console.log(token);

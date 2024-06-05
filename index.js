@@ -12,7 +12,7 @@ const blogRouter = require('./routes/blogview')
 const {router: blogcreateRouter} = require ('./routes/blog')
 const allblogs = require('./routes/home')
 const {router : profileRouter} = require('./routes/profile')
-
+const Commentrouter  = require('./routes/comments')
 
 app.use(express.json());
 app.use(cookieParser());
@@ -37,7 +37,7 @@ app.use('/createblog', blogcreateRouter);
 app.use('/blogs', blogRouter)
 app.use('/', allblogs)
 app.use('/profile' , profileRouter )
-
+app.use('/comments', Commentrouter)
 // Home route, requires authentication
 app.get('/home', authenticateToken, (req, res) => {
     res.json({ message: 'Welcome to the home page!', user: req.user });

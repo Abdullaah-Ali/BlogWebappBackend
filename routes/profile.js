@@ -23,6 +23,9 @@ const userProfileSchema = new mongoose.Schema({
   }
 });
 
+// we would add the user comments in the profile schema make it false as it is not important or required for everytime 
+// once the user make comments it would be save in the database and display on the same blog on which user displaye this can be done using the blogId tracking  
+
 const UserProfile = mongoose.model('UserProfile', userProfileSchema);
 
 router.route('/')

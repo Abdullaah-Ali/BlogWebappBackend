@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { Blog } = require('./blog');   // Import the Blog model
+const { authenticateToken } = require('./login');
 
 router.get('/:title', async (req, res) => {
   try {
@@ -17,5 +18,6 @@ router.get('/:title', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 module.exports = router;
