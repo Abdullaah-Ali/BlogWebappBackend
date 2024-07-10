@@ -29,3 +29,9 @@
     -->SEO Tags with NLP
     Implementation: Used NLP models to analyze content and generate SEO-friendly tags. Libraries like spaCy, NLTK were used
 
+![image](https://github.com/Abdullaah-Ali/BlogWebappBackend/assets/134156961/294133a7-d0a2-41dc-89c3-343c18d01b5d)
+
+![image](https://github.com/Abdullaah-Ali/BlogWebappBackend/assets/134156961/f06f7e6c-fb30-45e9-9c59-7c3880f1ee21)
+
+few images that show how we create the blogs and so vice versa how they are displayed.
+
